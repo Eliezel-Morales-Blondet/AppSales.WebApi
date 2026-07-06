@@ -53,9 +53,35 @@ namespace AppSales.WebApi.Business
                 customerName : e.CustomerName,
                 paymentTypeName : Enum.GetName(typeof(PaymentType), e.PaymentType)!,
                 total : e.Total,
-                saleDate : e.SaleDate.ToString("dd/MM/YYYY", CultureInfo.InvariantCulture)
-            ));
+                saleDate : e.SaleDate.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)
+            )).ToList();
+
+            var response = new GetSalesQueryResponse(formatSales, req.page, req.pageSize, totalItems);
+
+            return ApiResponse<GetSalesQueryResponse>.Success(response);
         }
 
+        public async Task<ApiResponse<GetSaleResponse>> GetByIdAsync(int id)
+        {
+            var sale = await _db.Sale.Include(d => d.Details).AsNoTracking().Where(s => s.SaleId == id).FirstOrDefaultAsync();
+
+            if (sale == null) return ApiResponse<GetSaleResponse>.Fail("Sale no found");
+
+            var result = new GetSaleResponse
+            (
+                saleId: sale.SaleId,
+                customerName: sale.CustomerName,
+                paymentTypeName: Enum.GetName(typeof(PaymentType), sale.PaymentType)!,
+                total: sale.Total,
+                saleDate: sale.SaleDate.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                details: sale.Details.Select(e => new GetSaleDetailResponse(
+                    productName: e.ProductName,
+                    quantity: e.Quantity,
+                    unitPrice: e.UnitPrice
+                    )).ToList()
+            );
+
+            return ApiResponse<GetSaleResponse>.Success(result);
+        }
     }
 }

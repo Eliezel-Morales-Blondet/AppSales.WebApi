@@ -1,3 +1,4 @@
+using AppSales.WebApi.Business;
 using AppSales.WebApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -12,6 +13,8 @@ builder.Services.AddOpenApi();
 
 var connection = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(connection));
+
+builder.Services.AddScoped<SaleBusiness>();
 
 var app = builder.Build();
 
